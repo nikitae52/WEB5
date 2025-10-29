@@ -1,9 +1,80 @@
+
+/*Функція для встановлення cookie*/
+function setCookie(name, value, days) {
+  let expires = "";
+  if (days) {
+    const date = new Date();
+    date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+    expires = "; expires=" + date.toUTCString();
+  }
+  document.cookie = name + "=" + (value || "") + expires + "; path=/; SameSite=Lax";
+}
+
+/*Функція для отримання cookie*/
+function getCookie(name) {
+  const nameEQ = name + "=";
+  const ca = document.cookie.split(';');
+  for (let i = 0; i < ca.length; i++) {
+    let c = ca[i];
+    while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+    if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+  }
+  return null;
+}
+
+/*Функція для видалення cookie*/
+function deleteCookie(name) {
+  document.cookie = name + '=; Max-Age=-99999999; path=/; SameSite=Lax';
+}
+
+/*Негайна перевірка cookie для Завдання 3 та основна логіка сайту,
+ приховання вебсайту до взаємодії з користувачем*/
+
+const cookieName = 'wordCountResult_v7';
+const wordCountCookie = getCookie(cookieName);
+let showCookieForm = true; // Прапор, який передамо в DOMContentLoaded
+
+if (wordCountCookie) {
+  // Діалогове вікно блокує виконання, поки користувач не натисне
+  const deleteData = confirm(`Збережений результат: "${wordCountCookie}".\n\nБажаєте видалити ці дані?`);
+
+  if (deleteData) {
+    deleteCookie(cookieName);
+    alert('Дані з cookies видалено. Сторінка оновиться.');
+    location.reload();
+    // Скрипт зупинить виконання тут, оскільки сторінка перезавантажується
+  } else {
+    alert('Дані не видалено. Cookies існують. Форма не буде показана.');
+    showCookieForm = false; // Повідомляємо DOM-скрипту не показувати форму
+  }
+}
+
+/**
+ * ==========================================================
+ * ОСНОВНА ЛОГІКА САЙТУ (після діалогового вікна)
+ * ==========================================================
+ */
+
 document.addEventListener('DOMContentLoaded', () => {
 
+  // РОБИМО САЙТ ВИДИМИМ лише ПІСЛЯ того, як користувач
+  // взаємодіяв з діалоговим вікном (якщо воно було).
+  const container = document.querySelector('.container');
+  if (container) {
+    container.style.visibility = 'visible';
+  }
+
+  // Запускаємо Завдання 1 та 2 одразу
   swapBlocksContent();
   calculateOvalArea();
-  setupCookieTask();
+  
+  // Запускаємо решту завдань, передаючи прапор про cookie
+  setupCookieTask(showCookieForm);
+  setupAlignmentTask();
+  setupBlockEditorTask();
 
+
+  /* Завдання 1: Міняє місцями вміст (HTML) та CSS-класи блоків .block4 та .block5.*/
   function swapBlocksContent() {
     const block4 = document.querySelector('.block4');
     const block5 = document.querySelector('.block5');
@@ -18,13 +89,11 @@ document.addEventListener('DOMContentLoaded', () => {
       
       block5.classList.remove('block5');
       block5.classList.add('block4');
-      
-      console.log('Завдання 1: Вміст та стилі .block4 та .block5 успішно поміняно місцями.');
-    } else {
-      console.error('Завдання 1: Не вдалося знайти .block4 або .block5');
     }
   }
 
+  /* Завдання 2: Обчислює площу овала за заданими
+     константами (a=15, b=25) та виводить результат в кінець блоку .block3.*/
   function calculateOvalArea() {
     const a = 15;
     const b = 25;
@@ -41,110 +110,67 @@ document.addEventListener('DOMContentLoaded', () => {
       resultParagraph.style.fontSize = '1.3em';
       
       block3.appendChild(resultParagraph);
-      console.log('Завдання 2: Площу овала обчислено та додано в блок 3.');
-    } else {
-       console.error('Завдання 2: Не вдалося знайти .block3');
     }
   }
 
-  function setupCookieTask() {
-    
-    function setCookie(name, value, days) {
-      let expires = "";
-      if (days) {
-        const date = new Date();
-        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-        expires = "; expires=" + date.toUTCString();
-      }
-      document.cookie = name + "=" + (value || "") + expires + "; path=/; SameSite=Lax";
-    }
-
-    function getCookie(name) {
-      const nameEQ = name + "=";
-      const ca = document.cookie.split(';');
-      for (let i = 0; i < ca.length; i++) {
-        let c = ca[i];
-        while (c.charAt(0) === ' ') c = c.substring(1, c.length);
-        if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
-      }
-      return null;
-    }
-
-    function deleteCookie(name) {
-      document.cookie = name + '=; Max-Age=-99999999; path=/; SameSite=Lax';
-    }
-
-    const cookieName = 'wordCountResult_v7';
-    const wordCountCookie = getCookie(cookieName);
+  /* Завдання 3 (Частина 2): Створення форми (якщо потрібно)
+      Приймає прапор 'shouldShowForm' з глобальної перевірки. */
+  function setupCookieTask(shouldShowForm) {
     const block3 = document.querySelector('.block3');
 
-    setTimeout(() => {
-      if (wordCountCookie) {
-        console.log('Завдання 3: Знайдено cookie:', wordCountCookie);
-        const deleteData = confirm(`Збережений результат: "${wordCountCookie}".\n\nБажаєте видалити ці дані?`);
+    // Якщо 'shouldShowForm' істинне, створюємо форму
+    if (shouldShowForm && block3) {
+      const formContainer = document.createElement('div');
+      formContainer.id = 'wordCountForm';
+      formContainer.style.marginTop = '15px';
+      formContainer.innerHTML = `
+        <h4 style="color: white;font-size: 1.3em;">Завдання 3: Кількість слів</h4>
+        <textarea id="wordCountText" 
+          placeholder="Введіть свій текст сюди, але не забагато..." 
+          style="width: 99%; 
+                 box-sizing: border-box; 
+                 overflow-y: hidden; 
+                 resize: none;
+                 min-height: 50px;
+                 padding: 10px; 
+                 font-size: 1.1rem;
+                 background-color: #333;
+                 color: white;
+                 border: 1px solid #555;
+                 "></textarea>
+        <button id="wordCountButton" 
+        style="font-size: 1rem; 
+        padding: 5px;
+        background-color: #555;
+        color: white;
+        border: 1px solid #777;
+        cursor: pointer;
+        ">Порахувати кількість слів</button>
+      `;
+      block3.appendChild(formContainer);
 
-        if (deleteData) {
-          deleteCookie(cookieName);
-          alert('Дані з cookies видалено. Сторінка оновиться.');
-          location.reload(); 
-        } else {
-          alert('Дані не видалено. Cookies існують. Форма не буде показана.');
-        }
-      } else if (block3) {
-        console.log('Завдання 3: Cookie не знайдено, створюємо форму.');
-        const formContainer = document.createElement('div');
-        formContainer.id = 'wordCountForm';
-        formContainer.style.marginTop = '15px';
-        formContainer.innerHTML = `
-          <h4 style="color: white;font-size: 1.3em;">Завдання 3: Кількість слів</h4>
-          <textarea id="wordCountText" 
-            placeholder="Введіть свій текст сюди, але не забагато..." 
-            style="width: 99%; 
-                   box-sizing: border-box; 
-                   overflow-y: hidden; 
-                   resize: none;
-                   min-height: 50px;
-                   padding: 10px; 
-                   font-size: 1.1rem;
-                   background-color: #333;
-                   color: white;
-                   border: 1px solid #555;
-                   "></textarea>
-          <button id="wordCountButton" 
-          style="font-size: 1rem; 
-          padding: 5px;
-          background-color: #555;
-          color: white;
-          border: 1px solid #777;
-          cursor: pointer;
-          ">Порахувати кількість слів</button>
-        `;
-        block3.appendChild(formContainer);
+      // Додаємо обробник події для кнопки підрахунку слів
+      document.getElementById('wordCountButton').addEventListener('click', () => {
+        const text = document.getElementById('wordCountText').value;
+        const words = text.trim().split(/\s+/).filter(Boolean);
+        const count = words.length;
+        const resultMessage = `Кількість слів у тексті: ${count}`;
 
-        document.getElementById('wordCountButton').addEventListener('click', () => {
-          const text = document.getElementById('wordCountText').value;
-          const words = text.trim().split(/\s+/).filter(Boolean);
-          const count = words.length;
-          const resultMessage = `Кількість слів у тексті: ${count}`;
-
-          alert(resultMessage);
-          setCookie(cookieName, resultMessage, 7);
-          formContainer.style.display = 'none';
-          console.log('Завдання 3: Результат збережено в cookies.');
-        });
-      } else {
-        console.error('Завдання 3: Не вдалося знайти .block3 для додавання форми.');
-      }
-
-    setupAlignmentTask();
-    setupBlockEditorTask();
-    }, 10); 
+        alert(resultMessage);
+        setCookie(cookieName, resultMessage, 7); // Використовуємо глобальну функцію
+        formContainer.style.display = 'none';
+      });
+    }
+    // Якщо shouldShowForm == false, функція просто нічого не робить,
+    // і форма не створюється.
   }
 
+  /**
+   * Завдання 4: Ініціалізує логіку вирівнювання.
+   */
   function setupAlignmentTask() {
     const block3 = document.querySelector('.block3');
     if (!block3) {
-      console.error('Завдання 4: Не вдалося знайти .block3 для форми.');
       return;
     }
 
@@ -166,8 +192,8 @@ document.addEventListener('DOMContentLoaded', () => {
       '5': document.querySelector('.block5')
     };
 
+    // Функція для вирівнювання блоків
     function alignBlocks() {
-      console.log('Завдання 4: dblclick! Застосування стилів.');
       const checkboxes = document.querySelectorAll('.alignment-checkbox');
       
       checkboxes.forEach(checkbox => {
@@ -190,6 +216,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
+    // Функція для відновлення стану вирівнювання з localStorage
     function restoreAlignment() {
       const checkboxes = document.querySelectorAll('.alignment-checkbox');
       checkboxes.forEach(checkbox => {
@@ -207,14 +234,14 @@ document.addEventListener('DOMContentLoaded', () => {
             restoredAlign = 'center';
             checkbox.checked = false;
           } else {
-            restoredAlign = (blockNum === '4') ? 'center' : 'initial';
+            // ВИПРАВЛЕННЯ: Встановлюємо 'center' за замовчуванням для всіх
+            restoredAlign = 'center';
             checkbox.checked = false;
           }
           
           block.style.textAlign = restoredAlign;
         }
       });
-      console.log('Завдання 4: Стилі вирівнювання відновлено з localStorage.');
     }
 
     document.addEventListener('dblclick', alignBlocks);
@@ -222,10 +249,15 @@ document.addEventListener('DOMContentLoaded', () => {
     restoreAlignment();
   }
 
+
+  /**
+   * Завдання 5: Ініціалізує логіку редагування блоків.
+   */
   function setupBlockEditorTask() {
     
     const block3 = document.querySelector('.block3');
     let block3EditableOriginalHTML = '';
+    // Збереження оригінального вмісту блоку 3 (зображення та карта)
     if (block3) {
       const block3Img = block3.querySelector('img');
       const block3Map = block3.querySelector('map');
@@ -237,6 +269,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let currentEditingForm = null; 
 
+    // Відновлення збереженого вмісту блоків з localStorage
     blockSelectors.forEach(selector => {
       const block = document.querySelector(selector);
       if (block) {
@@ -250,10 +283,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const storageKey = `editedBlockContent_v7_${selector}`;
         const savedContent = localStorage.getItem(storageKey);
 
+        // Якщо знайдено збережений вміст, відновлюємо його
         if (savedContent !== null) {
-          console.log(`Завдання 5: Відновлено вміст для ${selector} з localStorage.`);
-          
           if (selector === '.block3') {
+            // Для блоку 3 - замінюємо лише картинку/карту
             const oldImg = block.querySelector('img');
             const oldMap = block.querySelector('map');
             if (oldImg) oldImg.remove();
@@ -262,21 +295,19 @@ document.addEventListener('DOMContentLoaded', () => {
             block.style.fontStyle = 'italic';
             addRestoreButton(block, selector, originalBlockContent[selector]);
           } else {
+            // Для інших блоків - замінюємо весь вміст
             block.innerHTML = savedContent;
             block.style.fontStyle = 'italic'; 
             addRestoreButton(block, selector, originalBlockContent[selector]);
           }
         }
-      } else {
-        console.warn(`Завдання 5: Блок ${selector} не знайдено.`);
       }
     });
 
     if (!block3) {
-      console.error('Завдання 5: .block3 не знайдено, неможливо додати UI редактора.');
       return;
     }
-
+    // Створення інтерфейсу редактора блоків
     const editorUIContainer = document.createElement('div');
     editorUIContainer.id = 'editorTaskContainer';
     editorUIContainer.style.marginTop = '15px';
@@ -306,13 +337,16 @@ document.addEventListener('DOMContentLoaded', () => {
     
     block3.appendChild(editorUIContainer);
     
+    // Збереження повного HTML блоку 3 перед редагуванням
     const fullBlock3HtmlBeforeEdit = block3.innerHTML;
     
     const blockSelect = document.getElementById('blockEditorSelect');
 
+    // Обробник зміни вибору блоку для редагування
     blockSelect.addEventListener('change', (e) => {
       const selectedBlockSelector = e.target.value;
-
+    
+      // Якщо вже відкрито форму редагування, закриваємо її та відновлюємо попередній блок
       if (currentEditingForm) {
         const oldBlock = currentEditingForm.parentElement;
         const oldSelector = Array.from(oldBlock.classList).map(c => `.${c}`).find(c => blockSelectors.includes(c));
@@ -329,13 +363,13 @@ document.addEventListener('DOMContentLoaded', () => {
       
       const targetBlock = document.querySelector(selectedBlockSelector);
       if (!targetBlock) {
-        console.error(`Завдання 5: Не вдалося знайти цільовий блок: ${selectedBlockSelector}`);
         return;
       }
-      
+      //отримуємо вміст для редагування
       const storageKey = `editedBlockContent_v7_${selectedBlockSelector}`;
       const contentToEdit = localStorage.getItem(storageKey) ?? originalBlockContent[selectedBlockSelector];
       
+      // Створення форми редагування
       const form = document.createElement('div');
       form.className = 'editor-form-v7';
       form.style.padding = '10px';
@@ -358,28 +392,37 @@ document.addEventListener('DOMContentLoaded', () => {
       form.appendChild(saveButton);
       form.appendChild(cancelButton);
 
+      // Додаємо форму редагування до блоку
       if (selectedBlockSelector === '.block3') {
         const oldImg = targetBlock.querySelector('img');
         const oldMap = targetBlock.querySelector('map');
         if (oldImg) oldImg.remove();
         if (oldMap) oldMap.remove();
         targetBlock.insertAdjacentElement('afterbegin', form);
-      } else {
+      }
+      // Для інших блоків просто замінюємо вміст 
+      else {
         targetBlock.innerHTML = '';
         targetBlock.appendChild(form);
       }
+      // Встановлюємо нормальний стиль шрифту під час редагування
       targetBlock.style.fontStyle = 'normal';
 
+      // Обробники подій для кнопок збереження та скасування
       saveButton.addEventListener('click', () => {
         const newContent = textarea.value;
+        // Збереження відредагованого вмісту в localStorage
         localStorage.setItem(storageKey, newContent);
         
+        //Для блоку 3 вставляємо HTML зображення та карти
         if (selectedBlockSelector === '.block3') {
           form.remove();
           targetBlock.insertAdjacentHTML('afterbegin', newContent);
           targetBlock.style.fontStyle = 'italic';
           addRestoreButton(targetBlock, selectedBlockSelector, originalBlockContent[selectedBlockSelector]);
-        } else {
+        } 
+        //Для інших блоків просто оновлюємо вміст
+        else {
           targetBlock.innerHTML = newContent;
           targetBlock.style.fontStyle = 'italic';
           addRestoreButton(targetBlock, selectedBlockSelector, originalBlockContent[selectedBlockSelector]);
@@ -389,6 +432,7 @@ document.addEventListener('DOMContentLoaded', () => {
         blockSelect.value = ''; 
       });
 
+      // Обробник скасування редагування
       cancelButton.addEventListener('click', () => {
         restoreBlockState(targetBlock, selectedBlockSelector);
         
@@ -397,6 +441,11 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
     
+    /**
+     * Внутрішня функція (Завдання 5):
+     * Відновлює стан блоку при скасуванні
+     * редагування або при початковому завантаженні.
+     */
     function restoreBlockState(blockElement, blockSelector) {
       const storageKey = `editedBlockContent_v7_${blockSelector}`;
       const savedContent = localStorage.getItem(storageKey);
@@ -404,6 +453,8 @@ document.addEventListener('DOMContentLoaded', () => {
       blockElement.querySelector('.editor-form-v7')?.remove();
 
       if (savedContent !== null) {
+        // Якщо є збережений вміст, відновлюємо його
+        // Для блоку 3 вставляємо HTML зображення та карти
         if (blockSelector === '.block3') {
           const oldImg = blockElement.querySelector('img');
           const oldMap = blockElement.querySelector('map');
@@ -412,12 +463,16 @@ document.addEventListener('DOMContentLoaded', () => {
           blockElement.insertAdjacentHTML('afterbegin', savedContent);
           blockElement.style.fontStyle = 'italic';
           addRestoreButton(blockElement, blockSelector, originalBlockContent[blockSelector]);
-        } else {
+        } 
+        // Для інших блоків просто оновлюємо вміст
+        else {
           blockElement.innerHTML = savedContent;
           blockElement.style.fontStyle = 'italic';
           addRestoreButton(blockElement, blockSelector, originalBlockContent[blockSelector]);
         }
-      } else {
+      } 
+      //В іншому випадку відновлюємо оригінальний вміст
+      else {
         if (blockSelector === '.block3') {
           const oldImg = blockElement.querySelector('img');
           const oldMap = blockElement.querySelector('map');
@@ -432,6 +487,11 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
+    /**
+     * Внутрішня функція (Завдання 5):
+     * Додає кнопку "Відновити початковий вміст"
+     * до редагованого блоку.
+     */
     function addRestoreButton(blockElement, blockSelector, originalHtml) {
       if (blockElement.querySelector(`.restore-button-v7[data-target="${blockSelector}"]`)) {
         return;
@@ -453,6 +513,7 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
       
       if (blockSelector === '.block3') {
+        // Для блоку 3 розміщуємо кнопку після зображення
         const img = blockElement.querySelector('img');
         if (img) {
           img.insertAdjacentElement('afterend', restoreButton);
@@ -460,16 +521,18 @@ document.addEventListener('DOMContentLoaded', () => {
           blockElement.appendChild(restoreButton);
         }
       } else {
+        // Для інших блоків розміщуємо кнопку в кінці блоку
          blockElement.appendChild(restoreButton);
       }
      
-      
+      // Обробник події для кнопки відновлення
       restoreButton.addEventListener('click', (e) => {
         e.stopPropagation(); 
         
         localStorage.removeItem(`editedBlockContent_v7_${blockSelector}`);
         
         if (blockSelector === '.block3') {
+          // Для блоку 3 вставляємо HTML зображення та карти
           const oldImg = blockElement.querySelector('img');
           const oldMap = blockElement.querySelector('map');
           if (oldImg) oldImg.remove();
@@ -477,13 +540,14 @@ document.addEventListener('DOMContentLoaded', () => {
           
           blockElement.insertAdjacentHTML('afterbegin', originalHtml);
           blockElement.style.fontStyle = 'normal';
-        } else {
+        } 
+        else {
+          // Для інших блоків просто відновлюємо вміст
           blockElement.innerHTML = originalHtml;
           blockElement.style.fontStyle = 'normal';
         }
-        
+        // Видаляємо кнопку після відновлення
         restoreButton.remove();
-        console.log(`Завдання 5: ${blockSelector} відновлено до оригіналу.`);
       });
     }
   }
