@@ -1,0 +1,252 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body, html {
+    height: 100vh;
+    font-size: clamp(16px, 1.5vw, 24px);
+    background-color: rgb(28,28,30);
+}
+
+a {
+    color: #ffffff;
+    transition: color 0.3s;
+    text-decoration: none;
+}
+
+a:hover {
+    color: #929292;
+}
+
+.container {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.main {
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+}
+
+.left-column {
+    display: flex;
+    flex-direction: column;
+    width: 25%;
+}
+
+.center-column {
+    display: flex;
+    flex-direction: column;
+    width: 50%;
+}
+
+.block {
+    box-sizing: border-box;
+    font-weight: bold;
+    overflow-wrap: break-word; /* Виправлення для переносу слів */
+}
+
+.block1 {
+    background-color: rgb(21, 21, 21);
+    text-align: right;
+}
+
+.block2 {
+    flex: 0 0 auto;
+    background-color: rgb(21, 21, 21);
+    padding: 10px;
+}
+
+.block3 {
+    flex: 0 0 auto;
+    background-color: rgb(28,28,30);
+}
+
+.block4 {
+    width: 100%;
+    background-color: rgb(28,28,30);
+    text-align: center;
+    padding: 10px;
+    color: white;
+}
+
+.block4 h2 {
+    font-size: clamp(18px, 2vw, 36px);
+    font-weight: bold;
+    margin-bottom: 20px;
+    text-align: center;
+    font-family: 'Montserrat Bold', sans-serif;
+}
+
+.block5 {
+    flex: 0 0 auto;
+    background-color: rgb(28,28,30);
+    padding: 10px 10px 30px 10px;
+    margin-bottom: 20px;
+}
+
+.block5 li, .block4 li {
+    color: white;
+    margin: 20px 0;
+    padding-left: 0;
+    list-style-position: inside;
+    margin-bottom: 1rem;
+    margin-top: 1rem;
+    font-size: clamp(5px, 2vw, 33px);
+}
+
+.block5 p {
+    font-size: clamp(14px, 2vw, 33px);
+    font-weight: bold;
+    color: white;
+
+    padding-left: 20px;
+    margin-bottom: 15px;
+}
+
+.block6 {
+    font-family: "Anton", sans-serif;
+    font-size: clamp(13px, 2vw, 32px);
+    flex: 0 0 auto;
+    background-color: #000000;
+    color: white;
+    white-space: normal;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.block6 h1 {
+    font-size: clamp(20px, 2.5vw, 40px);
+    font-weight: bold;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.block7 {
+    flex-basis: 10%;
+    background-color: rgb(21, 21, 21);
+    text-align: right;
+    padding: 10px;
+}
+
+.block img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.blockX, .blockY {
+    font-size: clamp(20px, 4vw, 60px);
+    color: white;
+    padding: 2vw;
+    display: inline-block;
+    font-family: "Anton", sans-serif;
+    max-width: 80%;
+}
+
+.blockX {
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.blockY {
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+ol, ul {
+    padding-left: 1rem;
+    margin: 0 auto;
+    width: auto;
+
+}
+
+ol {
+    list-style-type: decimal;
+}
+
+ul {
+    list-style-type: disc;
+}
+
+
+
+@media (max-width: 768px) {
+    
+
+    body, html {
+        height: auto;
+    }
+
+    .container {
+        height: auto;
+        min-height: 100vh; 
+    }
+
+    
+    .main {
+        flex-direction: column;
+        flex: none; 
+    }
+
+    
+    .left-column,
+    .center-column,
+    .block4 {
+        width: 100%;
+    }
+
+    
+    .block1, .block7 {
+        text-align: center;
+        padding: 0; 
+    }
+    
+    
+    .block7 {
+        flex-basis: auto; 
+        margin-top: auto; 
+    }
+
+    
+    .blockX, .blockY {
+        font-size: clamp(24px, 8vw, 40px); 
+        padding: 4vw 2vw; 
+        
+        display: block; 
+        max-width: 100%; 
+        position: static;
+        transform: none; 
+    }
+    
+    .block5 li, .block4 li {
+        font-size: clamp(16px, 4vw, 24px); 
+    }
+
+    .block5 p {
+        font-size: clamp(18px, 4.5vw, 26px);
+        padding-left: 10px;
+    }
+
+    .block6 h1 {
+        font-size: clamp(22px, 5vw, 30px);
+    }
+
+    .block6 {
+        font-size: clamp(16px, 4vw, 24px);
+    }
+    
+    ol, ul {
+        max-width: 90%; 
+    }
+}
